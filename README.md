@@ -209,8 +209,8 @@ This project is licensed under the MIT License – see the `LICENSE.md` for deta
 
 | Type     | Name                                                     | Notes                                                                        |
 |----------|----------------------------------------------------------|------------------------------------------------------------------------------|
-| Textbook | Lehninger Principles of Biochemistry, 8th Edition        | David L. Nelson, Michael M. Cox, Aaron Hoskins. © 2021 Macmillan Learning    |
-| Textbook | Campbell Biology, 12th Edition                           | Lisa A. Urry, Michael L. Cain, Peter V. Minorsky. © 2021 Pearson Education   |
+| Textbook | *Lehninger Principles of Biochemistry, 8th Edition*      | David L. Nelson, Michael M. Cox, Aaron Hoskins. © 2021 Macmillan Learning    |
+| Textbook | *Campbell Biology, 12th Edition*                         | Lisa A. Urry, Michael L. Cain, Peter V. Minorsky. © 2021 Pearson Education   |
 | Course   | 7.00x Introduction to Biology: The Secret of Life        | Taught by Eric S. Lander, MIT Department of Biology. Provided by MITx        |
 | Course   | MCB63X Principles of Biochemistry                        | Taught by Alain Viel, Harvard Faculty of Arts & Sciences. Provided by edX    |
 | Course   | Introduction to Genetics and Evolution                   | Taught by Mohamed Noor, Duke Department of Biology. Provided by Coursera     |
