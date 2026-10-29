@@ -238,7 +238,7 @@ Special thanks to the beloved professors: Eric S. Lander, David J. Malan, Mohame
 ## Contact
 
 - **Author**: Xuan He (also known as *Hex-The-Observer* or *Xavier-The-Explorer*)
-- **GitHub**: [Xavier-The-Explorer](https://github.com/Xavier-The-Explorer)
+- **GitHub**: [DPTlite](https://github.com/Xaiver-The-Explorer/DPTlite)
 - **LinkedIn**: [Xuan He](https://www.linkedin.com/in/hex-the-observer)
 - **Email**: heseelion@gmail.com
 
