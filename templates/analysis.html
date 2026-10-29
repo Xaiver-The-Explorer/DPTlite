@@ -1,0 +1,211 @@
+{% extends "layout.html" %}
+{% block title %}Analysis &mdash; DPTlite{% endblock %}
+
+{% block content %}
+<div class="analysis-header">
+  <p class="header-note">Paste DNA, RNA, or a protein sequence (or upload a FASTA file). Structure calls below are simple bioinformatic heuristics, not lab-grade predictions.</p>
+</div>
+
+<div class="layout">
+
+  <!-- ============ LEFT: INPUT PANEL ============ -->
+  <section class="input-panel">
+    <label for="sequence-input">Sequence</label>
+    <textarea id="sequence-input" spellcheck="false" placeholder="Paste a sequence here, e.g.&#10;ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAG&#10;&#10;FASTA headers (lines starting with &gt;) are ignored automatically."></textarea>
+
+    <div id="live-preview" class="live-preview" aria-hidden="true"></div>
+
+    <div class="input-meta">
+      <span id="detected-type" class="badge badge-empty">no sequence yet</span>
+      <span id="detected-length" class="length-tag"></span>
+    </div>
+
+    <label for="fasta-upload" class="upload-label">Or upload a FASTA / text file</label>
+    <input type="file" id="fasta-upload" accept=".fasta,.fa,.txt">
+
+    <div class="button-row">
+      <button id="analyze-btn" class="btn-primary">Analyze sequence</button>
+      <button id="clear-btn" class="btn-ghost" type="button">Clear</button>
+    </div>
+
+    <div class="examples">
+      <span>Try an example:</span>
+      <button class="example-btn" data-kind="dna">Short DNA ORF</button>
+      <button class="example-btn" data-kind="rna">mRNA fragment</button>
+      <button class="example-btn" data-kind="protein">Protein sequence</button>
+    </div>
+
+    <div id="error-box" class="error-box" hidden></div>
+
+    <div class="bookmark-box">
+      <label for="bookmark-name">Save this sequence as</label>
+      <div class="bookmark-row">
+        <input type="text" id="bookmark-name" maxlength="60" placeholder="e.g. Insulin gene fragment">
+        <button id="bookmark-btn" class="btn-ghost btn-small">Save</button>
+      </div>
+      <p id="bookmark-msg" class="muted small" hidden></p>
+    </div>
+
+    <details class="legend" id="bookmark-panel">
+      <summary>Your bookmarks</summary>
+      <div id="bookmark-quickload" class="bookmark-quickload">
+        <p class="muted small">Loading&hellip;</p>
+      </div>
+    </details>
+
+    <details class="legend">
+      <summary>Base color key</summary>
+      <div class="legend-grid">
+        <span><i class="swatch swatch-a"></i>A</span>
+        <span><i class="swatch swatch-t"></i>T / U</span>
+        <span><i class="swatch swatch-c"></i>C</span>
+        <span><i class="swatch swatch-g"></i>G</span>
+        <span><i class="swatch swatch-invalid"></i>invalid</span>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ RIGHT: RESULTS ============ -->
+  <section class="results-panel">
+
+    <p id="analysis-time" class="analysis-time" hidden></p>
+
+    <nav class="tabs" id="tabs" hidden>
+      <button class="tab-btn active" data-tab="overview">Overview</button>
+      <button class="tab-btn" data-tab="translation">Translation</button>
+      <button class="tab-btn" data-tab="plots">Hydropathy &amp; charge</button>
+      <button class="tab-btn" data-tab="structure">Secondary structure</button>
+      <button class="tab-btn" data-tab="domains">Domains</button>
+      <button class="tab-btn" data-tab="export">Export</button>
+    </nav>
+
+    <div id="empty-state" class="empty-state">
+      <p>Results will show up here once you analyze a sequence.</p>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="tab-panel" id="panel-overview" hidden>
+      <div class="card-grid" id="overview-stats"></div>
+
+      <div class="card" id="nucleic-card">
+        <h3>Nucleic acid views</h3>
+        <div class="seq-block">
+          <span class="seq-label">Complement</span>
+          <code id="complement-seq" class="mono seq-colored"></code>
+        </div>
+        <div class="seq-block">
+          <span class="seq-label">Reverse complement</span>
+          <code id="revcomp-seq" class="mono seq-colored"></code>
+        </div>
+        <div class="seq-block">
+          <span class="seq-label">Transcribed RNA</span>
+          <code id="rna-seq" class="mono seq-colored"></code>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Amino acid composition</h3>
+        <div id="aa-composition" class="composition-bars"></div>
+      </div>
+    </div>
+
+    <!-- TRANSLATION -->
+    <div class="tab-panel" id="panel-translation" hidden>
+      <div class="card">
+        <h3>Six-frame translation</h3>
+        <p class="muted">Stop codons are shown as <code class="mono">*</code>.</p>
+        <div id="six-frames"></div>
+      </div>
+      <div class="card">
+        <h3>Open reading frames (Met &rarr; Stop)</h3>
+        <p class="muted">Longest candidate ORFs, used by default for the protein analysis below.</p>
+        <div id="orf-list"></div>
+      </div>
+    </div>
+
+    <!-- PLOTS -->
+    <div class="tab-panel" id="panel-plots" hidden>
+      <div class="card">
+        <h3>Hydrophobicity plot <span class="muted">(Kyte&ndash;Doolittle, sliding window)</span></h3>
+        <canvas id="hydropathy-chart" height="220"></canvas>
+      </div>
+      <div class="card">
+        <h3>Charge distribution <span class="muted">(net charge, sliding window)</span></h3>
+        <canvas id="charge-chart" height="220"></canvas>
+      </div>
+      <div class="card-grid" id="protein-numbers"></div>
+    </div>
+
+    <!-- STRUCTURE -->
+    <div class="tab-panel" id="panel-structure" hidden>
+      <div class="card">
+        <h3>Predicted secondary structure <span class="muted">(simplified Chou&ndash;Fasman)</span></h3>
+        <div class="structure-summary" id="structure-summary"></div>
+        <code id="structure-track" class="mono structure-track"></code>
+        <div class="legend-grid structure-legend">
+          <span><i class="swatch swatch-helix"></i>Helix (H)</span>
+          <span><i class="swatch swatch-sheet"></i>Sheet (E)</span>
+          <span><i class="swatch swatch-coil"></i>Coil (C)</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Secondary structure mix</h3>
+        <canvas id="structure-bar-chart" height="160"></canvas>
+      </div>
+    </div>
+
+    <!-- DOMAINS -->
+    <div class="tab-panel" id="panel-domains" hidden>
+      <div class="card">
+        <h3>Signal peptide</h3>
+        <p id="signal-peptide-result" class="muted"></p>
+      </div>
+      <div class="card">
+        <h3>Transmembrane helices</h3>
+        <p class="muted">Windows of high hydrophobicity long enough to span a membrane.</p>
+        <div id="tm-list"></div>
+      </div>
+      <div class="card">
+        <h3>Order / disorder call</h3>
+        <p class="muted">Simplified charge&ndash;hydropathy rule (in the spirit of Uversky, 2000).</p>
+        <div id="disorder-result"></div>
+      </div>
+      <div class="card">
+        <h3>Disorder tendency <span class="muted">(windowed, positive = ordered)</span></h3>
+        <canvas id="disorder-chart" height="220"></canvas>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="tab-panel" id="panel-export" hidden>
+      <div class="card">
+        <h3>Downloadable report</h3>
+        <p class="muted">Built from the last sequence you analyzed.</p>
+        <div class="export-buttons">
+          <button class="btn-ghost download-btn" data-format="txt">Text (.txt)</button>
+          <button class="btn-ghost download-btn" data-format="json">JSON (.json)</button>
+          <button class="btn-ghost download-btn" data-format="pdf">PDF (.pdf)</button>
+          <button class="btn-ghost download-btn" data-format="fasta">FASTA (.fasta)</button>
+          <button class="btn-ghost download-btn" data-format="zip">ZIP bundle (.zip)</button>
+        </div>
+        <p class="muted export-hint">
+          <b>PDF</b>: summary + hydropathy, charge-vs-pH (with pI marked) and disorder plots on one page.
+          <b>FASTA</b>: your input sequence and the protein that was analyzed.
+          <b>ZIP</b>: the text report, the JSON report, the PDF report, the FASTA file, and the three plots as PNG images.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Static plot images <span class="muted">(matplotlib, for reports/slides)</span></h3>
+        <button id="generate-plots-btn" class="btn-ghost">Generate images</button>
+        <div id="static-plots" class="static-plots"></div>
+      </div>
+    </div>
+
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% block title %}Profile &mdash; DPTlite{% endblock %}
+
+{% block content %}
+<section class="simple-page wide">
+  <h1>{{ user["name"] }}'s profile</h1>
+  <p class="muted">{{ user["email"] }} &middot; member since {{ user["created_at"][:10] }}</p>
+
+  <div class="card-grid stat-grid">
+    <div class="stat-tile">
+      <div class="stat-value">{{ stats.total_analyses }}</div>
+      <div class="stat-label">Total analyses</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-value">{{ stats.most_common_type }}</div>
+      <div class="stat-label">Most common sequence type</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-value">{{ stats.longest_protein }} aa</div>
+      <div class="stat-label">Longest protein analyzed</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Usage analytics</h3>
+    <div class="card-grid">
+      <div class="stat-tile"><div class="stat-value">{{ stats.dna_count }}</div><div class="stat-label">DNA analyses</div></div>
+      <div class="stat-tile"><div class="stat-value">{{ stats.rna_count }}</div><div class="stat-label">RNA analyses</div></div>
+      <div class="stat-tile"><div class="stat-value">{{ stats.protein_count }}</div><div class="stat-label">Protein analyses</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Sequence statistics</h3>
+    <div class="card-grid">
+      <div class="stat-tile">
+        <div class="stat-value">{% if stats.avg_nt_length %}{{ "{:,}".format(stats.avg_nt_length) }} bp{% else %}—{% endif %}</div>
+        <div class="stat-label">Average sequence length (DNA/RNA)</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">{% if stats.avg_protein_length %}{{ "{:,}".format(stats.avg_protein_length) }} aa{% else %}—{% endif %}</div>
+        <div class="stat-label">Average protein length</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">{{ "{:,}".format(stats.total_orfs) }}</div>
+        <div class="stat-label">Total ORFs discovered</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Cache statistics</h3>
+    <div class="card-grid">
+      <div class="stat-tile"><div class="stat-value">{{ stats.cache_hits }}</div><div class="stat-label">Cache hits</div></div>
+      <div class="stat-tile"><div class="stat-value">{{ stats.cache_misses }}</div><div class="stat-label">Cache misses</div></div>
+      <div class="stat-tile"><div class="stat-value">{{ stats.cache_hit_rate }}%</div><div class="stat-label">Hit rate</div></div>
+    </div>
+    <p class="muted small">A hit means you re-submitted a sequence the server had already analyzed, so the result came back instantly. ORF and cache counts only cover analyses run since this feature was added.</p>
+  </div>
+
+  <div class="card">
+    <h3>API key</h3>
+    <p class="muted">Use this to call DPTlite programmatically without logging in via the browser.</p>
+    <code id="api-key-display" class="mono api-key">{{ user["api_key"] }}</code>
+    <div class="api-example">
+      <span class="muted">Example:</span>
+      <code class="mono small">curl -X POST {{ request.url_root }}api/v1/analyze -H "X-API-Key: {{ user['api_key'] }}" -H "Content-Type: application/json" -d '{"sequence":"ATGGCTTAA"}'</code>
+    </div>
+    <button id="regen-key-btn" class="btn-ghost btn-small">Regenerate key</button>
+  </div>
+
+  <div class="card">
+    <h3>Bookmarked sequences</h3>
+
+    <div class="bookmark-toolbar">
+      <label>Sort by
+        <select id="bookmark-sort">
+          <option value="date-desc">Newest first</option>
+          <option value="date-asc">Oldest first</option>
+          <option value="name-asc">Name A &rarr; Z</option>
+          <option value="name-desc">Name Z &rarr; A</option>
+          <option value="custom">My own order (drag to arrange)</option>
+        </select>
+      </label>
+      <span class="bookmark-new-group">
+        <input type="text" id="new-group-name" maxlength="60" placeholder="New group name">
+        <button type="button" id="new-group-btn" class="btn-ghost btn-small">Create group</button>
+      </span>
+    </div>
+    <p id="bookmark-message" class="muted small" hidden></p>
+
+    <div id="bookmark-sections" class="bookmark-sections">
+      <p class="muted small">Loading&hellip;</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById("regen-key-btn").addEventListener("click", async () => {
+    if (!confirm("Regenerate your API key? The old key will stop working immediately.")) return;
+    const res = await fetch("{{ url_for('api_regenerate_key') }}", { method: "POST" });
+    const data = await res.json();
+    if (data.api_key) {
+      document.getElementById("api-key-display").textContent = data.api_key;
+    }
+  });
+</script>
+<script src="{{ url_for('static', filename='bookmarks.js') }}"></script>
+{% endblock %}

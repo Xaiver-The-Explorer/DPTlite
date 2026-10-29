@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block title %}About &mdash; DPTlite{% endblock %}
+
+{% block content %}
+<section class="simple-page">
+  <h1>About DPTlite</h1>
+  <h3>Introduction</h3>
+  <p>
+    DPTlite (DNA Protein Toolbox, light version) is a non-profit bioinformatics web application focused on scientific research and educational
+    purposes.
+  </p>
+  <h3>Ambition</h3>
+  <p>
+    It is built to help college students and curious minds worldwide see
+    <ul>
+      <li>how a nucleic acid sequence becomes a protein</li>
+      <li>how a protein's own composition hints at its shape</li>
+    </ul>
+    through simple, transparent heuristics rather than a black box.
+  </p>
+  <h3>Acknowledgment</h3>
+  <p>Special thanks to Harvard University and CS50 staff for their support to this project.</p>
+  <h3>Contact</h3>
+  <p>
+    If you have any questions, feedback, feature suggestions, or scientific discussions, please post them on
+    <ul>
+      <li>GitHub:</li>
+    </ul>
+    If you are interested in
+    <ul>
+      <li>life sciences (including genetics, biochemistry, molecular biology, etc.)</li>
+      <li>teaching with this online toolkit</li>
+      <li>contributing to next generation's scientific platform</li>
+      <li>supporting the project through <a href="{{ url_for('donate') }}">donation</a></li>
+    </ul>
+    please reach out to the author by
+    <ul>
+      <li>email: <a href="mailto:heseelion@gmail.com" class="contact-email mono">heseelion@gmail.com</a></li>
+      <li>LinkedIn:</li>
+    </ul>
+  </p>
+</section>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% block title %}History &mdash; DPTlite{% endblock %}
+
+{% block content %}
+<section class="simple-page wide">
+  <h1>Your history</h1>
+
+  <!-- ============ PART 1: RECENT ANALYSES ============ -->
+  <h2 class="section-title">Recent analyses</h2>
+  <p class="muted">Analyses you've run in the last 30 days. Older entries roll off automatically.</p>
+
+  {% if not entries %}
+    <div class="empty-panel">
+      <p>Nothing here yet &mdash; run an analysis and it'll show up in this list.</p>
+      <a href="{{ url_for('analysis_page') }}" class="btn-solid">Go to Analysis</a>
+    </div>
+  {% else %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Type</th>
+            <th>Length</th>
+            <th>Protein length</th>
+            <th>Sequence snippet</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in entries %}
+          <tr>
+            <td>{{ e["created_at"] }}</td>
+            <td><span class="badge badge-{{ e['input_type']|lower }}">{{ e["input_type"] }}</span></td>
+            <td>{{ e["length"] }}</td>
+            <td>{{ e["protein_length"] }}</td>
+            <td><code class="mono snippet">{{ e["sequence_snippet"] }}&hellip;</code></td>
+            <td><button class="btn-ghost btn-small load-history" data-sequence="{{ e['full_sequence'] }}">Reload</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <!-- ============ PART 2: BOOKMARKS (these have names) ============ -->
+  <h2 class="section-title">Bookmarks</h2>
+  <p class="muted">
+    Sequences you saved with a name. They never expire. Rename, sort, or group them on your
+    <a href="{{ url_for('user_page') }}">Profile</a> page.
+  </p>
+
+  {% if not bookmarks %}
+    <div class="empty-panel">
+      <p>No bookmarks yet &mdash; give a sequence a name on the Analysis page and it'll be listed here.</p>
+    </div>
+  {% else %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Group</th>
+            <th>Type</th>
+            <th>Length</th>
+            <th>Saved</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bookmarks %}
+          <tr>
+            <td>
+              <strong>{{ b["name"] }}</strong>
+              <div><code class="mono snippet muted">{{ b["snippet"][:24] }}&hellip;</code></div>
+            </td>
+            <td>{% if b["group_name"] %}{{ b["group_name"] }}{% else %}<span class="muted">&mdash;</span>{% endif %}</td>
+            <td><span class="badge badge-{{ b['input_type']|lower }}">{{ b["input_type"] }}</span></td>
+            <td>{{ b["length"] }}</td>
+            <td>{{ b["created_at"][:10] }}</td>
+            <td><button class="btn-ghost btn-small reload-bookmark" data-id="{{ b['id'] }}">Reload</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Both kinds of "Reload" hand the sequence to the Analysis page through sessionStorage, so it arrives pre-filled in the textarea.
+  function goToAnalysis(sequence) {
+    sessionStorage.setItem("dptlite-preload-sequence", sequence);
+    window.location.href = "{{ url_for('analysis_page') }}";
+  }
+
+  document.querySelectorAll(".load-history").forEach((btn) => {
+    btn.addEventListener("click", () => goToAnalysis(btn.dataset.sequence));
+  });
+
+  // A bookmark's full sequence is fetched on click instead of being stored in the page.
+  document.querySelectorAll(".reload-bookmark").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const res = await fetch(`/api/bookmarks/${btn.dataset.id}`);
+      if (res.ok) goToAnalysis((await res.json()).sequence);
+    });
+  });
+</script>
+{% endblock %}

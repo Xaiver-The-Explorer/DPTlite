@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}DPTlite &mdash; DNA Protein Toolbox{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <img class="hero-bg" src="{{ url_for('static', filename='images/dna-helix.svg') }}" alt="" aria-hidden="true">
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <p class="hero-eyebrow">DNA &middot; RNA &middot; Protein, in one place</p>
+    <h1>Everyone should know the secret of life in the 21st century!</h1>
+    <p class="hero-sub">
+      Paste a sequence, translate it into protein, and see its shape hinted at
+      through hydrophobicity, charge, and simple structure heuristics &mdash;
+      all in your browser.
+    </p>
+
+    <div class="hero-actions">
+      {% if session.user_id %}
+        <a href="{{ url_for('analysis_page') }}" class="btn-solid btn-large">Go to Analysis</a>
+        <a href="{{ url_for('user_page') }}" class="btn-ghost btn-large">My Profile</a>
+      {% else %}
+        <a href="{{ url_for('register') }}" class="btn-solid btn-large">Register</a>
+        <a href="{{ url_for('login') }}" class="btn-ghost btn-large">Log in</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="feature-strip">
+  <div class="feature-card">
+    <h3>Translate</h3>
+    <p>Six-frame translation and an ORF finder built on the standard genetic code.</p>
+  </div>
+  <div class="feature-card">
+    <h3>Visualize</h3>
+    <p>Interactive hydropathy, charge, and disorder charts &mdash; plus downloadable plots.</p>
+  </div>
+  <div class="feature-card">
+    <h3>Track</h3>
+    <p>Every analysis is saved to your history, with bookmarks for sequences you reuse.</p>
+  </div>
+</section>
+{% endblock %}

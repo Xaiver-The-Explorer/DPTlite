@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}DPTlite{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% block head %}{% endblock %}
+<script>
+  /* Set the theme before first paint so there's no flash of the wrong colors. Defaults to light mode, per DPTlite's design. */
+  (function () {
+    var saved = localStorage.getItem("dptlite-theme");
+    if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+  })();
+</script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="{{ url_for('index') }}">
+    <svg class="brand-logo" viewBox="0 0 40 40" role="img" aria-label="DPTlite DNA double helix">
+      <g transform="translate(20 20) rotate(45) translate(0 -20)">
+      <line class="logo-rung logo-a" x1="5.50" y1="4" x2="0" y2="4"/>
+      <line class="logo-rung logo-t" x1="0" y1="4" x2="-5.50" y2="4"/>
+      <line class="logo-rung logo-c" x1="-5.50" y1="12" x2="0" y2="12"/>
+      <line class="logo-rung logo-g" x1="0" y1="12" x2="5.50" y2="12"/>
+      <line class="logo-rung logo-t" x1="5.50" y1="20" x2="0" y2="20"/>
+      <line class="logo-rung logo-a" x1="0" y1="20" x2="-5.50" y2="20"/>
+      <line class="logo-rung logo-g" x1="-5.50" y1="28" x2="0" y2="28"/>
+      <line class="logo-rung logo-c" x1="0" y1="28" x2="5.50" y2="28"/>
+      <line class="logo-rung logo-a" x1="5.50" y1="36" x2="0" y2="36"/>
+      <line class="logo-rung logo-t" x1="0" y1="36" x2="-5.50" y2="36"/>
+        <polyline class="logo-backbone" points="0.00,0 2.10,1 3.89,2 5.08,3 5.50,4 5.08,5 3.89,6 2.10,7 0.00,8 -2.10,9 -3.89,10 -5.08,11 -5.50,12 -5.08,13 -3.89,14 -2.10,15 -0.00,16 2.10,17 3.89,18 5.08,19 5.50,20 5.08,21 3.89,22 2.10,23 0.00,24 -2.10,25 -3.89,26 -5.08,27 -5.50,28 -5.08,29 -3.89,30 -2.10,31 -0.00,32 2.10,33 3.89,34 5.08,35 5.50,36 5.08,37 3.89,38 2.10,39 0.00,40"/>
+        <polyline class="logo-backbone" points="-0.00,0 -2.10,1 -3.89,2 -5.08,3 -5.50,4 -5.08,5 -3.89,6 -2.10,7 -0.00,8 2.10,9 3.89,10 5.08,11 5.50,12 5.08,13 3.89,14 2.10,15 0.00,16 -2.10,17 -3.89,18 -5.08,19 -5.50,20 -5.08,21 -3.89,22 -2.10,23 -0.00,24 2.10,25 3.89,26 5.08,27 5.50,28 5.08,29 3.89,30 2.10,31 0.00,32 -2.10,33 -3.89,34 -5.08,35 -5.50,36 -5.08,37 -3.89,38 -2.10,39 -0.00,40"/>
+      </g>
+    </svg>
+    <span class="brand-name">DPTlite</span>
+  </a>
+
+  <nav class="site-nav">
+    <a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' }}">Home</a>
+    {% if session.user_id %}
+      <a href="{{ url_for('analysis_page') }}" class="{{ 'active' if request.endpoint == 'analysis_page' }}">Analysis</a>
+      <a href="{{ url_for('history_page') }}" class="{{ 'active' if request.endpoint == 'history_page' }}">History</a>
+      <a href="{{ url_for('user_page') }}" class="{{ 'active' if request.endpoint == 'user_page' }}">Profile</a>
+    {% endif %}
+    <a href="{{ url_for('donate') }}" class="{{ 'active' if request.endpoint == 'donate' }}">Donate</a>
+    <a href="{{ url_for('about') }}" class="{{ 'active' if request.endpoint == 'about' }}">About</a>
+  </nav>
+
+  <div class="header-actions">
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle light/dark mode">
+      <span class="theme-icon">&#9788;</span>
+    </button>
+    {% if session.user_id %}
+      <span class="hi-user">Hi, {{ session.user_name }}</span>
+      <a href="{{ url_for('logout') }}" class="btn-ghost">Log out</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="btn-ghost">Log in</a>
+      <a href="{{ url_for('register') }}" class="btn-solid">Register</a>
+    {% endif %}
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-stack">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main class="site-main">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <p>&copy; 2026 Hex-The-Observer &middot; MIT Licensed. All rights reserved.</p>
+  <span class="hex-badge" title="Hex-The-Observer"><span class="hex-text">Hex</span></span>
+</footer>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}Log in &mdash; DPTlite{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <form class="auth-card" method="post" action="{{ url_for('login') }}" autocomplete="off">
+    <h1>Welcome back</h1>
+    <p class="muted">Log in to reach the analysis tool, your history, and your profile.</p>
+
+    <label for="email">Email address</label>
+    <input type="email" id="email" name="email" required maxlength="120" placeholder="ada@example.com">
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" required placeholder="Your password">
+
+    <label class="checkbox-row">
+      <input type="checkbox" id="show-password"> Show password
+    </label>
+
+    <button type="submit" class="btn-solid btn-full">Log in</button>
+
+    <p class="auth-footnote">New here? <a href="{{ url_for('register') }}">Create an account</a></p>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById("show-password").addEventListener("change", (e) => {
+    document.getElementById("password").type = e.target.checked ? "text" : "password";
+  });
+</script>
+{% endblock %}
